@@ -10,8 +10,7 @@ library(tidyverse)
 library(FSA)
 
 #set working directory 
-wd = "~/Documents/lecmec manuscript/analysis"  
-#wd = " " # *** Set working directory here
+wd = " " # *** Set working directory here
 setwd(wd)
 
 #function to create and move into subdirectory
