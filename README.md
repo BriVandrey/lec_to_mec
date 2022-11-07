@@ -1,2 +1,4 @@
 # lec_to_mec
-Analysis code used to generate figures and statistical ouputs for https://www.biorxiv.org/content/10.1101/2022.08.25.505296v1
+Data and analysis code used to generate figures and statistical ouputs for https://www.biorxiv.org/content/10.1101/2022.08.25.505296v1
+
+To use the code, clone the analysis scripts and data and specify your working directory in each analysis script (location is denoted by a *** in both scripts)
