@@ -11,8 +11,7 @@ library(gridExtra)
 library(ggpubr)
 
 #set working directory - add relevant path for your machine
-wd = "~/Desktop/analysis" 
-#wd = " " # *** Set working directory here
+wd = " " # *** Set working directory here
 setwd(wd)
 
 #function to create and move into subdirectory
