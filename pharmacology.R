@@ -11,7 +11,8 @@ library(gridExtra)
 library(ggpubr)
 
 #set working directory - add relevant path for your machine
-wd = " " # *** Set working directory here
+wd = "~/Documents/lecmec manuscript/analysis"  
+#wd = " " # *** Set working directory here
 setwd(wd)
 
 #function to create and move into subdirectory
@@ -61,6 +62,62 @@ pharma_lp <- function(df, col, filter, xlabel1, xlabel2, ylabel, filename)
                   axis.title.y = element_text(size=12, margin= margin(t=0,r=0,b=0,l=0))) 
 
   ggsave(file=filename, width =35, height =45, units="mm") #save plot
+}
+
+# function to generate scatterplot with simple linear model 
+corr_plot <- function(df, x_col, y_col, x_label, y_label, filename){
+  
+  # handle col variables
+  x_var <- enquo(x_col)
+  y_var <- enquo(y_col)
+  
+  # plot data - option to colour code by cell type, uncommented
+  plt <- ggplot(df, aes(x=!!x_var, y=!!y_var)) +
+    geom_point(fill=NA, shape=1, size=2, na.rm=TRUE, show.legend=FALSE)+ 
+    #aes(colour=factor(type)) +
+    labs(title="", x=x_label, y=y_label) +
+    scale_color_brewer(palette="BuPu")+  
+    xlim(-80, -50)+ #limits set for figures used in paper
+    ylim(0, 4.5)+ 
+    theme_classic() 
+  
+  plt + theme(axis.text.x = element_text(size = 12, angle=-40, color='black'), 
+              axis.text.y = element_text(size = 12, color='black'),
+              axis.title.y = element_text(size=12, margin= margin(t=0,r=14,b=0,l=0)), 
+              axis.title.x = element_text(size=12, margin= margin(t=14,r=0,b=0,l=0)),
+              legend.position = 'none') +
+    
+    geom_smooth(method='glm') 
+  
+  ggsave(file=filename, width =40, height =45, units='mm') #save plot
+}
+
+# function to generate scatterplot with simple linear model - coloured by group
+corr_plot_grouped <- function(df, x_col, y_col, x_label, y_label, filename){
+  
+  # handle col variables
+  x_var <- enquo(x_col)
+  y_var <- enquo(y_col)
+  
+  # plot data - option to colour code by cell type, uncommented
+  plt <- ggplot(df, aes(x=!!x_var, y=!!y_var)) +
+    geom_point(fill=NA, shape=1, size=2, na.rm=TRUE, show.legend=FALSE)+ 
+    aes(colour=factor(type)) +
+    labs(title="", x=x_label, y=y_label) +
+    #scale_color_brewer(palette="BuPu")+  
+    xlim(-80, -50)+ #limits set for figures used in paper
+    ylim(0, 4.5)+ 
+    theme_classic() 
+  
+  plt + theme(axis.text.x = element_text(size = 12, angle=-40, color='black'), 
+              axis.text.y = element_text(size = 12, color='black'),
+              axis.title.y = element_text(size=12, margin= margin(t=0,r=14,b=0,l=0)), 
+              axis.title.x = element_text(size=12, margin= margin(t=14,r=0,b=0,l=0)),
+              legend.position = 'none') +
+    
+    geom_smooth(method='glm') 
+  
+  ggsave(file=filename, width =40, height =45, units='mm') #save plot
 }
 
 #-----------------------------------------------------------------------------------------------------------
@@ -215,13 +272,6 @@ cell_by_cell_fried_hw(gaba_df_pulses, "1356_S1C1", "1356_S1C1_fried_halfwidth.tx
 # gabazine -> cgp, pyramidal cells, *** only one cell
 cell_by_cell_fried(gaba_df_pulses, "1309_S2C1", "1309_S2C1_fried.txt")
 cell_by_cell_fried_hw(gaba_df_pulses, "1309_S2C1", "1309_S2C1_fried_halfwidth.txt")
-
-
-# --------------------------------------------------------------------------------------------------------------    
-# nested ANOVAs with cell as a factor, includes all pulses instead of avg per cell -----------------------------
-#nested_aov(gaba_df_pulses, 'l2_sc', 'gaba_gzcgp', "l2_sc_gzcgp_nested_aov.txt")
-#nested_aov(gaba_df_pulses, 'l2_sc', 'gaba_cgpgz', "l2_sc_cgpgz_nested_aov.txt")
-#nested_aov(gaba_df_pulses, 'l2_pc', 'gaba_gzcgp', "l2_pc_gzcgp_nested_aov.txt")
 
 #--------------------------------------------------------------------------------------------------------------
 setwd("..") # return to main pharmacology folder for plots
