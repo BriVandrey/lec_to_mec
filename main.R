@@ -10,7 +10,8 @@ library(tidyverse)
 library(FSA)
 
 #set working directory 
-wd = " " # *** Set working directory here
+wd = "~/Documents/lecmec manuscript/analysis"  
+#wd = " " # *** Set working directory here
 setwd(wd)
 
 #function to create and move into subdirectory
@@ -50,7 +51,7 @@ lp_fluor <- function(df, exp, ymax){
     geom_line(aes(group=1), size = 0.6) + #mean trace
     geom_errorbar(aes(ymax = mean+se, ymin = mean-se), width = 0.2, size = 0.6) + #error bars 
     scale_x_discrete(labels=c("MEC", "DG")) +
-    xlab("") + ylab("Gray Value (pixels)") +
+    xlab("") + ylab("Intensity") +
     ylim(0, ymax)
   lp + theme(axis.text.x = element_text(size = 10, color='black'), 
                   axis.text.y = element_text(size = 10, color='black'),
@@ -74,7 +75,7 @@ lp_fluor_dist <- function(df, label, xmax){
     geom_line(aes(x=distance_microns, y=grey_value_normalised, group=mouse), size=0.3, colour="grey74")+
     stat_smooth(aes(y=grey_value_normalised, x=distance_microns), method = lm, formula = y ~ poly(x, 10), se = FALSE, size=0.8, colour='black')+
 
-    xlab("Distance") + ylab("Gray Value (pixels)") +
+    xlab("Distance") + ylab("Intensity") +
     ylim(0, 1)+
     xlim(0, xmax)
   lp + theme(axis.text.x = element_text(size = 10, color='black'), 
@@ -332,8 +333,6 @@ create_dir(wd, "fluorescence_intensity")
 fluor_mec_dg <- read.csv(file= paste(wd, "data/fluorescence_intensity/mec_dg.csv", sep="/"), head=TRUE, sep=",") 
 fluor_dg <- read.csv(file= paste(wd, "data/fluorescence_intensity/retrograde_dg.csv", sep="/"), head=TRUE, sep=",") 
 fluor_mec <- read.csv(file= paste(wd, "data/fluorescence_intensity/retrograde_mec.csv", sep="/"), head=TRUE, sep=",") 
-distance_dg <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_dg.csv", sep="/"), head=TRUE, sep=",") 
-distance_mec <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_mec.csv", sep="/"), head=TRUE, sep=",") 
 
 normalised = filter(fluor_mec_dg, region == 'mec_l1_normalised'| region == 'dg_oml_normalised') # normalised data only
 df_retro = filter(normalised, experiment == 'retro_cre')
@@ -349,33 +348,6 @@ df.retro_cre <- df_retro %>%
 #compare dg & mec
 retro_cre_wilcox <- wilcox.test(value~region, data=df_retro) 
 
-#summary statistics - intensity x distance
-df.summary_distance_dg <- distance_dg %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-df.summary_distance_mec <- distance_mec %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - dg
-fried_dg <- distance_dg %>% friedman_test(average~distance|mouse)
-eff_size_dg <- distance_dg %>% friedman_effsize(average~distance|mouse)
-pw_dg <- distance_dg %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - mec
-fried_mec <- distance_mec %>% friedman_test(average~distance|mouse)
-eff_size_mec <- distance_mec %>% friedman_effsize(average~distance|mouse)
-pw_mec <- distance_mec %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
 # line plot comparing intensity in DG & MEC - Figure 2, Panel D
 lp_fluor(fluor_mec_dg, 'retro_cre', 40)
 
@@ -384,9 +356,7 @@ lp_fluor_dist(fluor_dg, 'retro_dg', 200)
 lp_fluor_dist(fluor_mec, 'retro_mec', 400)
 
 #save analysis outputs to text file
-results <- list(df.retro_cre, retro_cre_wilcox, 
-                df.summary_distance_dg, fried_dg, eff_size_dg, pw_dg,
-                df.summary_distance_mec, fried_mec, eff_size_mec, pw_mec)
+results <- list(df.retro_cre, retro_cre_wilcox)
 capture.output(results, file='retro_cre_intensity.txt')
 
 
@@ -398,11 +368,6 @@ fluor_dg_pir <- read.csv(file= paste(wd, "data/fluorescence_intensity/anterograd
 fluor_mec_pir <- read.csv(file= paste(wd, "data/fluorescence_intensity/anterograde_pir_mec.csv", sep="/"), head=TRUE, sep=",") 
 fluor_dg_mpfc <- read.csv(file= paste(wd, "data/fluorescence_intensity/anterograde_mpfc_dg.csv", sep="/"), head=TRUE, sep=",") 
 fluor_mec_mpfc <- read.csv(file= paste(wd, "data/fluorescence_intensity/anterograde_mpfc_mec.csv", sep="/"), head=TRUE, sep=",") 
-
-distance_dg_pir <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_dg_pir.csv", sep="/"), head=TRUE, sep=",") 
-distance_mec_pir <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_mec_pir.csv", sep="/"), head=TRUE, sep=",") 
-distance_dg_mpfc <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_dg_mpfc.csv", sep="/"), head=TRUE, sep=",") 
-distance_mec_mpfc <- read.csv(file= paste(wd, "data/fluorescence_intensity/distance_mec_mpfc.csv", sep="/"), head=TRUE, sep=",") 
 
 df_pir <- filter(normalised, experiment == 'anter_cre_pir')
 df_mpfc <- filter(normalised, experiment == 'anter_cre_mpfc')
@@ -429,60 +394,6 @@ df.antero_mpfc <- df_mpfc %>%
 #compare dg & mec, medial prefrontal
 anter_cre_wilcox_mpfc <- wilcox.test(value~region, data=df_mpfc)
 
-#summary statistics - intensity x distance, piriform
-df.summary_distance_dg_pir <- distance_dg_pir %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-df.summary_distance_mec_pir <- distance_mec_pir %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - dg
-fried_dg_pir <- distance_dg_pir %>% friedman_test(average~distance|mouse)
-eff_size_dg_pir <- distance_dg_pir %>% friedman_effsize(average~distance|mouse)
-pw_dg_pir <- distance_dg_pir %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - mec
-fried_mec_pir <- distance_mec_pir %>% friedman_test(average~distance|mouse)
-eff_size_mec_pir <- distance_mec_pir %>% friedman_effsize(average~distance|mouse)
-pw_mec_pir <- distance_mec %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
-#summary statistics - intensity x distance, medial prefrontal cortex
-df.summary_distance_dg_mpfc <- distance_dg_mpfc %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-df.summary_distance_mec_mpfc <- distance_mec_mpfc %>% 
-  group_by(distance) %>% 
-  summarise(count = n(), 
-            sd = sd(average, na.rm = TRUE),
-            se = sd/(sqrt(count)),
-            average = mean(average))
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - dg
-fried_dg_mpfc <- distance_dg_mpfc %>% friedman_test(average~distance|mouse)
-eff_size_dg_mpfc <- distance_dg_mpfc %>% friedman_effsize(average~distance|mouse)
-pw_dg_mpfc <- distance_dg_mpfc %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
-#friedmans test, intensity x distance, 50 uM steps (averaged) - mec
-fried_mec_mpfc <- distance_mec_mpfc %>% friedman_test(average~distance|mouse)
-eff_size_mec_mpfc <- distance_mec_mpfc %>% friedman_effsize(average~distance|mouse)
-pw_mec_mpfc <- distance_mec %>% #pairwise comparisons
-  wilcox_test(average ~ distance, paired = TRUE, p.adjust.method = "bonferroni")
-
 # line plots comparing intensity in DG & MEC - Figure 3, Panels C, G
 lp_fluor(fluor_mec_dg, 'anter_cre_pir', 150)  
 lp_fluor(fluor_mec_dg, 'anter_cre_mpfc', 40)  
@@ -495,11 +406,7 @@ lp_fluor_dist(fluor_mec_mpfc, 'antero_mpfc_mec', 400)
 
 #save analysis outputs to text file
 results <- list(df.antero_pir, anter_cre_wilcox_pir, 
-                df.antero_mpfc, anter_cre_wilcox_mpfc,
-                df.summary_distance_dg_pir, fried_dg_pir, eff_size_dg_pir, pw_dg_pir,
-                df.summary_distance_mec_pir, fried_mec_pir, eff_size_mec_pir, pw_mec_pir,
-                df.summary_distance_dg_mpfc, fried_dg_mpfc, eff_size_dg_mpfc, pw_dg_mpfc,
-                df.summary_distance_mec_mpfc, fried_mec_mpfc, eff_size_mec_mpfc, pw_mec_mpfc)
+                df.antero_mpfc, anter_cre_wilcox_mpfc)
 capture.output(results, file='antero_cre_intensity.txt')
 
 
